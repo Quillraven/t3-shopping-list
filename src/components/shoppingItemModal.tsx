@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import type { FormEvent } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 interface ShoppingItemModalProps {
   onShoppingItemAdd: (name: string) => void;
@@ -6,34 +7,30 @@ interface ShoppingItemModalProps {
 
 const ShoppingItemModal = (props: ShoppingItemModalProps) => {
 
-  const nameRef = useRef<HTMLInputElement>(null);
-  const modalCheckboxRef = useRef<HTMLInputElement>(null);
+  const [visible, setVisible] = useState(false);
 
-  const onSubmit = useCallback(() => {
-    if (!nameRef.current?.value) return;
+  const onSubmit = (event: FormEvent<HTMLFormElement>, form: HTMLFormElement) => {
+    event?.preventDefault();
 
-    const itemName = nameRef.current.value;
-    nameRef.current.value = "";
-    props.onShoppingItemAdd(itemName);
-  }, [props, nameRef]);
+    const nameInp = form.elements.namedItem("itemNameInput") as HTMLInputElement;
+    if (!nameInp.value) return false;
 
-  const onCancel = useCallback(() => {
-    if (!nameRef.current?.value) return;
+    props.onShoppingItemAdd(nameInp.value);
+    setVisible(false);
+    return true;
+  };
 
-    nameRef.current.value = "";
-  }, [nameRef]);
+  const onCancel = () => {
+    setVisible(false);
+  };
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (!modalCheckboxRef.current?.checked) return;
+    if (!visible) return;
 
     if (event.key === "Escape") {
-      onCancel();
-      modalCheckboxRef.current.checked = false;
-    } else if (event.key === "Enter") {
-      onSubmit();
-      modalCheckboxRef.current.checked = false;
+      setVisible(false);
     }
-  }, [modalCheckboxRef, onSubmit, onCancel]);
+  }, [visible]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -44,32 +41,32 @@ const ShoppingItemModal = (props: ShoppingItemModalProps) => {
 
   return (
     <>
-      <label htmlFor="my-modal" className="btn btn-primary mt-10">Add Shopping Item</label>
+      <button className="btn btn-primary mt-10" onClick={() => setVisible(true)}>
+        Add Shopping Item
+      </button>
 
-      <input ref={modalCheckboxRef}
-             type="checkbox"
-             id="my-modal"
-             className="modal-toggle"
-      />
-      <div className="modal">
+      {visible &&
         <div className="modal-box">
           <h3 className="font-bold text-lg">Create Shopping Item</h3>
           <p className="py-4">Enter data for new shopping item!</p>
-          <input type="text"
-                 ref={nameRef}
-                 placeholder="Enter name"
-                 className="input input-bordered input-primary w-full max-w-xs"
-          />
-          <div className="modal-action">
-            <label htmlFor="my-modal" className="btn btn-outline btn-secondary" onClick={onCancel}>
-              Cancel
-            </label>
-            <label htmlFor="my-modal" className="btn btn-primary" onClick={onSubmit}>
-              Add
-            </label>
-          </div>
+          <form onSubmit={(event) => onSubmit(event, event.currentTarget)}>
+            <input type="text"
+                   name={"itemNameInput"}
+                   placeholder="Enter name"
+                   className="input input-bordered input-primary w-full max-w-xs"
+                   autoFocus={true}
+            />
+            <div className="modal-action">
+              <button type={"reset"} className="btn btn-outline btn-secondary" onClick={onCancel}>
+                Cancel
+              </button>
+              <button type={"submit"} className="btn btn-primary">
+                Add
+              </button>
+            </div>
+          </form>
         </div>
-      </div>
+      }
     </>
   );
 };

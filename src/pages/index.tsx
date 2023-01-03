@@ -9,9 +9,9 @@ import ShoppingItemModal from "../components/shoppingItemModal";
 const Home: NextPage = () => {
 
   const { data: queryData } = trpc.shoppingItem.getShoppingItems.useQuery();
-  const { data: addData, mutate: addMutation } = trpc.shoppingItem.addShoppingItem.useMutation();
-  const { data: deleteData, mutate: deleteMutation } = trpc.shoppingItem.deleteShoppingItem.useMutation();
-  const { data: updateData, mutate: updateMutation } = trpc.shoppingItem.updateShoppingItem.useMutation();
+  const { data: addData, mutateAsync: addMutation } = trpc.shoppingItem.addShoppingItem.useMutation();
+  const { data: deleteData, mutateAsync: deleteMutation } = trpc.shoppingItem.deleteShoppingItem.useMutation();
+  const { data: updateData, mutateAsync: updateMutation } = trpc.shoppingItem.updateShoppingItem.useMutation();
 
   const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
 
@@ -69,7 +69,7 @@ const Home: NextPage = () => {
             <ul className="menu mt-10 font-semibold">
               {shoppingItems.map(shoppingItem =>
                 <li
-                  className={shoppingItem.checked ? "line-through mb-1.5" : "mb-1.5"}
+                  className={shoppingItem.checked ? "line-through mb-1.5 text-red-500" : "mb-1.5"}
                   key={shoppingItem.id}
                   onClick={() => updateMutation({
                     id: shoppingItem.id,
